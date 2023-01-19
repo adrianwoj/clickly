@@ -1,15 +1,24 @@
 ﻿using Clickly.Constants;
 using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Windows.Controls;
 
 namespace Clickly.Core
 {
+    public class KeyPress
+    {
+        public ushort Code { get; set; }
+        public bool Shift { get; set; } = false;
+    }
+
     public class AutoClick
     {
         public bool Enabled { get; set; } = false;
-        public ushort Key { get; set; }
+        public List<KeyPress> Keys { get; set; } = new List<KeyPress>();
         public double Delay { get; set; } = 100;
+        public int DelayVariation { get; set; } = 50;
+        public int InitialDelay { get; set; } = 0;
 
         public void StartAutoClick(Button button, Border border)
         {
@@ -37,13 +46,26 @@ namespace Clickly.Core
             var random = new Random();
 
             new Thread(new ThreadStart(() => {
+
+                if (InitialDelay != 0)
+                    Thread.Sleep(InitialDelay);
+
                 while (Enabled)
                 {
-                    Keyboard.SendKey(Key, false, Keyboard.InputType.Keyboard);
-                    Thread.Sleep(random.Next(20, 50));
-                    Keyboard.SendKey(Key, true, Keyboard.InputType.Keyboard);
+                    foreach (var key in Keys)
+                    {
+                        if (key.Shift)
+                            Keyboard.SendKey(Keyboard.DirectXKeyStrokes.DIK_LSHIFT, false, Keyboard.InputType.Keyboard);
 
-                    Thread.Sleep((int)Delay + random.Next(-50, 50));
+                        Keyboard.SendKey(key.Code, false, Keyboard.InputType.Keyboard);
+                        Thread.Sleep(random.Next(20, 50));
+                        Keyboard.SendKey(key.Code, true, Keyboard.InputType.Keyboard);
+
+                        if (key.Shift)
+                            Keyboard.SendKey(Keyboard.DirectXKeyStrokes.DIK_LSHIFT, true, Keyboard.InputType.Keyboard);
+                    }
+
+                    Thread.Sleep((int)Delay + random.Next(0, DelayVariation));
                 }
             })).Start();
         }

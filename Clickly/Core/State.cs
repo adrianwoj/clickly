@@ -5,5 +5,6 @@
         public AutoClick BraveryCape { get; set; } = new AutoClick();
         public AutoClick AutoPickUp { get; set; } = new AutoClick();
         public AutoClick AutoSpace { get; set; } = new AutoClick();
+        public AutoClick AutoBattlePass { get; set; } = new AutoClick();
     }
 }
